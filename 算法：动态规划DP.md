@@ -62,7 +62,7 @@
 
 ![image-20210502113938337](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210502113938337.png)
 
-# 斐波那契数列
+# 斐波那契数列 √
 
 0  1  1  2  3
 
@@ -165,7 +165,7 @@ int maxSubArray(vector<int>& nums)
 
 ![image-20210502123213652](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210502123213652.png)
 
-# 最长升序子序列长度LIS问题
+# 最长升序子序列长度LIS
 
 ```shell
 输入：5 3 4 1 8 7 9
@@ -176,20 +176,140 @@ int maxSubArray(vector<int>& nums)
 
 ![image-20210502145605741](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210502145605741.png)
 
-# 最长公共子序列LCS
+# 最长公共子序列LCS √
 
 LCS：longest common subsequence（注意，子序列可以不连续，子串要求连续）
 
-![image-20210502152918743](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210502152918743.png)
+给定两个字符串 text1 和 text2，返回这两个字符串的最长 公共子序列 的长度。如果不存在 公共子序列 ，返回 0 
 
-![image-20210502154716305](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210502154716305.png)
+一个字符串的 子序列 是指这样一个新的字符串：它是由原字符串在不改变字符的相对顺序的情况下删除某些字符（也可以不删除任何字符）后组成的新字符串。
 
-![image-20210502153413434](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210502153413434.png)
+```shell
+例如，"ace" 是 "abcde" 的子序列，但 "aec" 不是 "abcde" 的子序列。
+两个字符串的 公共子序列 是这两个字符串所共同拥有的子序列。
 
-![image-20210502153444912](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210502153444912.png)
+输入：text1 = "abcde", text2 = "ace" 
+输出：3  
+解释：最长公共子序列是 "ace" ，它的长度为 3 。
+```
 
-**记忆化存储进行优化**
+**我的思路：**
 
-![image-20210502160313758](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210502160313758.png)![image-20210502160509893](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210502160509893.png)
+- 若Xn == Ym：LCS(X[1...n], Y[1...m]) = LCS(X[1...n-1], Y[1...m-1]);
+- 若Xn != Ym：LCS(X[1...n], Y[1...m]) = max{  LCS(X[1...n], Y[1...m-1]),  LCS(X[1...n-1], Y[1...m]) } 
+- 动态规划，并使用dp数组进行记忆化存储来优化
+
+![image-20210503180145128](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210503180145128.png)
+
+```cpp
+class Solution {
+public:
+    int longestCommonSubsequence(string str1, string str2) 
+    {
+        //初始化dp数组
+        //dp[n][m]：n表示第一个串的长度，m是第二个串的长度
+        //dp[n][m]记录的就是当尾部下标分别为n和m时，此时LCS的长度
+        vector<vector<int>> dp;  
+        dp.resize(str1.size());
+        for(int i = 0; i < str1.size(); ++i)
+        {
+            dp[i].resize(str2.size(), -1);
+        }
+
+        //动态规划，从尾部开始计算
+        return LCS(str1, str1.size() - 1, str2, str2.size() -1, dp);
+    }
+
+    int LCS(string & str1, int n, string & str2, int m, vector<vector<int>> & dp)
+    {
+        if(n < 0 || m < 0)  return 0;
+
+        if(dp[n][m] >= 0)   return dp[n][m];  //查表，子问题已被求解过
+
+        if(str1[n] == str2[m])
+        {
+            dp[n][m] = LCS(str1, n-1, str2, m-1, dp) + 1;
+            return dp[n][m];
+        }
+        else
+        {
+            int len1 = LCS(str1, n, str2, m-1, dp);
+            int len2 = LCS(str1, n-1, str2, m, dp);
+            dp[n][m] = len1 > len2 ? len1 : len2;
+            return dp[n][m];
+        }
+    }
+};
+```
+
+扩展：怎么找出最长回文子序列，找出该串和该串逆置后的串，这两个串的最长子序列就是最长回文子序列
+
+# 最长回文子序列 √
+
+```shell
+给定一个字符串 s ，找到其中最长的回文子序列，并返回该序列的长度。可以假设 s 的最大长度为 1000 。
+
+输入: "bbbab"
+输出:  4
+一个可能的最长回文子序列为 "bbbb"。
+```
+
+**我的思路：**
+
+- 找出该串和该串逆置后的串，这两个串的最长子序列就是原串最长回文子序列
+
+```cpp
+class Solution {
+public:
+    //最长回文子序列
+    int longestPalindromeSubseq(string s) 
+    {
+        string str1 = s;
+        reverse(s.begin(), s.end());
+        string str2 = s;
+
+        return LCS(str1, str2);
+    }
+
+    //最长公共子序列
+    int LCS(string str1, string str2) 
+    {
+        //初始化dp数组
+        //dp[n][m]：n表示第一个串的长度，m是第二个串的长度
+        //dp[n][m]记录的就是当尾部下标分别为n和m时，此时LCS的长度
+        vector<vector<int>> dp;  
+        dp.resize(str1.size());
+        for(int i = 0; i < str1.size(); ++i)
+        {
+            dp[i].resize(str2.size(), -1);
+        }
+
+        //动态规划，从尾部开始计算
+        return LCS(str1, str1.size() - 1, str2, str2.size() -1, dp);
+    }
+
+    int LCS(string & str1, int n, string & str2, int m, vector<vector<int>> & dp)
+    {
+        if(n < 0 || m < 0)  return 0;
+
+        if(dp[n][m] >= 0)   return dp[n][m];  //查表，子问题已被求解过
+
+        if(str1[n] == str2[m])
+        {
+            dp[n][m] = LCS(str1, n-1, str2, m-1, dp) + 1;
+            return dp[n][m];
+        }
+        else
+        {
+            int len1 = LCS(str1, n, str2, m-1, dp);
+            int len2 = LCS(str1, n-1, str2, m, dp);
+            dp[n][m] = len1 > len2 ? len1 : len2;
+            return dp[n][m];
+        }
+    }
+};
+```
+
+
 
 # T70
