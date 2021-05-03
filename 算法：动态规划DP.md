@@ -242,7 +242,125 @@ public:
 };
 ```
 
-扩展：怎么找出最长回文子序列，找出该串和该串逆置后的串，这两个串的最长子序列就是最长回文子序列
+扩展：怎么找出最长回文子序列，找出该串和该串逆置后的串，这两个串的最长子序列就是最长回文子序列，（找回文子序列可以用该思路，回文子串用该思路时，有的用例通不过（输入：
+
+"aacabdkacaa"
+
+输出：
+
+"aaca"
+
+预期结果：
+
+"aca"），因此这时还需判断找到的字符串是否来自同一个字符串）
+
+# 输出最长公共子序列 √
+
+上述最长公共子序列题目只输出了LCS的长度，那LCS内容是什么呢？
+
+**我的思路：**
+
+- 在上题的基础上，多用一个path数组记录每次的路径，根据该数组输出字符
+
+```cpp
+#include <vector>
+#include <iostream>
+#include <stdio.h>
+using namespace std;
+
+class Solution {
+public:
+	vector<vector<int>> path;  //记录路径，1对角线，2左边，3上边
+
+    //根据path数组，输出LCS
+	void showLCS(string & str1, int n, int m)
+	{
+		if (n < 0 || m < 0)	return;
+
+		if (path[n][m] == 1)
+		{
+			showLCS(str1, n - 1, m - 1);
+			cout<<str1[n]<<" ";	
+		}
+		else if (path[n][m] == 2)
+		{
+			showLCS(str1, n , m-1);
+		}
+		else
+		{
+			showLCS(str1, n - 1, m);
+		}
+	}
+
+	int longestCommonSubsequence(string str1, string str2)
+	{
+		//初始化dp数组
+		//dp[n][m]：n表示第一个串的长度，m是第二个串的长度
+		//dp[n][m]记录的就是当尾部下标分别为n和m时，此时LCS的长度
+		vector<vector<int>> dp;
+		dp.resize(str1.size());
+		for (int i = 0; i < str1.size(); ++i)
+		{
+			dp[i].resize(str2.size(), -1);
+		}
+		
+		path = dp;
+
+		//动态规划，从尾部开始计算
+		return LCS(str1, str1.size() - 1, str2, str2.size() - 1, dp);
+	}
+
+	int LCS(string & str1, int n, string & str2, int m, vector<vector<int>> & dp)
+	{
+		if (n < 0 || m < 0)  return 0;
+
+		if (dp[n][m] >= 0)   return dp[n][m];  //查表，子问题已被求解过
+
+		if (str1[n] == str2[m])
+		{
+			dp[n][m] = LCS(str1, n - 1, str2, m - 1, dp) + 1;
+			path[n][m] = 1;  //对角线
+			return dp[n][m];
+		}
+		else
+		{
+			int len1 = LCS(str1, n, str2, m - 1, dp);
+			int len2 = LCS(str1, n - 1, str2, m, dp);
+			dp[n][m] = len1 > len2 ? len1 : len2;
+
+			if (dp[n][m] == len1)	path[n][m] = 2;//左边
+			else path[n][m] = 3;//上边
+
+			return dp[n][m];
+		}
+	}
+};
+
+int main()
+{
+	string str1("abcde");
+	string str2("ace");
+
+	Solution sol;
+	cout << sol.longestCommonSubsequence(str1, str2) << endl<<endl;
+
+	//打印路径数组
+	for (int i = 0; i < sol.path.size(); ++i)
+	{
+		for (int j = 0; j < sol.path[i].size(); ++j)
+		{
+			printf("%2d  ", sol.path[i][j]);
+			//cout << sol.path[i][j] << "  ";
+		}
+		cout << endl;
+	}
+	cout << endl << endl;
+
+	sol.showLCS(str1, str1.size()-1, str2.size()-1);
+}
+```
+
+![image-20210503190914498](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210503190914498.png)
 
 # 最长回文子序列 √
 
@@ -309,6 +427,137 @@ public:
     }
 };
 ```
+
+# 最长公共子串 √
+
+```shell
+给定两个字符串str1和str2,输出两个字符串的最长公共子串
+题目保证str1和str2的最长公共子串存在且唯一。
+
+输入："abcbced","acbcbcef"
+返回值："bcbc"
+```
+
+**我的思路：**（[求两个字符串的最长公共子串](https://blog.csdn.net/qq_25800311/article/details/81607168)）
+
+- 把两个字符串分别以行和列组成一个二维矩阵。
+
+- 比较二维矩阵中每个点对应行列字符中否相等，相等的话值设置为1，否则设置为0。
+
+- 通过查找出值为1的最长对角线就能找到最长公共子串
+
+  <img align='left' src="img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210503222609250.png" alt="image-20210503222609250" style="zoom:50%;" />
+
+```cpp
+string LCS(string str1, string str2) 
+{
+    //用二维数组记录str1与str2，行列相等进行记录
+    int maxlen = 0;    //子串最大长度
+    int endindex = 0;  //子串结束下标
+    vector<vector<int>> matrix(str1.size(),vector<int>(str2.size()));
+    for(int i = 0; i < str1.size(); ++i)
+    {
+        for(int j = 0; j < str2.size(); ++j)
+        {
+            if(str1[i] == str2[j])
+            {
+                if(i==0 || j == 0)    matrix[i][j] = 1;
+                else	matrix[i][j] = matrix[i-1][j-1] + 1;
+            }
+            else
+            {
+                matrix[i][j] = 0;
+            }
+
+            if(matrix[i][j] > maxlen)
+            {
+                maxlen = matrix[i][j];
+                endindex = i;
+            }
+        }
+    }
+    //substr(pos, size)：从pos开始拷贝size个字符返回
+    return str1.substr(endindex-maxlen+1, maxlen);//（起始位置，几个字符）
+}
+```
+
+# 最长回文子串 √
+
+```shell
+给你一个字符串 s，找到 s 中最长的回文子串。
+
+输入：s = "babad"
+输出："bab"
+解释："aba" 同样是符合题意的答案。
+      012345678910
+输入："aacabdkacaa"
+输出："aca"
+```
+
+**我的思路：**
+
+- 找出该串和该串逆置后的串，这两个串的最长子串就是原串最长回文串
+
+- 注意：需判断找到的字符串是否来自同一个字符串
+
+- <img align='left' src="img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210503220746132.png" alt="image-20210503220746132" style="zoom:40%;" />
+
+- 怎么判断是否来自同一个字符串？
+
+  ![image-20210503223048544](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210503223048544.png)
+
+```cpp
+class Solution {
+public:
+    string longestPalindrome(string s) 
+    {
+        string str1 = s;
+        reverse(s.begin(), s.end());
+        string str2 = s;
+
+        return LCS(str1, str2);
+    }
+    string LCS(string str1, string str2) 
+    {
+        //用二维数组记录str1与str2，行列相等进行记录
+        int maxlen = 0;    //子串最大长度
+        int endindex = 0;  //子串结束下标
+        vector<vector<int>> matrix(str1.size(),vector<int>(str2.size()));
+        for(int i = 0; i < str1.size(); ++i)
+        {
+            for(int j = 0; j < str2.size(); ++j)
+            {
+                if(str1[i] == str2[j])
+                {
+                    if(i==0 || j == 0)    matrix[i][j] = 1;
+                    else	matrix[i][j] = matrix[i-1][j-1] + 1;
+                }
+                else
+                {
+                    matrix[i][j] = 0;
+                }
+
+                if(matrix[i][j] > maxlen)
+                {
+                    //判断比较的字符串是不是来源自同一个字符串
+                    int pre = i - matrix[i][j] + 1;  //之前串的起始下标
+                    int now = j - matrix[i][j] + 1;  //现在串的起始下标
+                    if(now == str1.size()-pre-matrix[i][j])
+                    {
+                        maxlen = matrix[i][j];
+                        endindex = i;
+                    }
+                    
+                }
+            }
+        }
+        //substr(pos, size)：从pos开始拷贝size个字符返回
+        return str1.substr(endindex-maxlen+1, maxlen);//（起始位置，几个字符）
+    }
+};
+```
+
+
 
 
 
