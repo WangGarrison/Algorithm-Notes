@@ -1,8 +1,4 @@
-> T61
-
-# 目录
-
-- [动规简介](#动规简介)
+# T61
 
 # 动规简介
 
@@ -165,16 +161,98 @@ int maxSubArray(vector<int>& nums)
 
 ![image-20210502123213652](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210502123213652.png)
 
-# 最长升序子序列长度LIS
+# 最长递增子序列长度LIS√
 
 ```shell
 输入：5 3 4 1 8 7 9
 输出：4 （3 4 8 9）
 ```
 
-![image-20210502150057631](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210502150057631.png)
+**我的思路：**
 
-![image-20210502145605741](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210502145605741.png)
+- dp[i]: 以第i个元素结尾的递增子序列的长度
+
+- dp[0] = 1;
+
+- dp[1] = max{1, 1+dp[0]} ar[0] < ar[1]
+
+- dp[2] = max{1, 1+dp[1]} ar[1] < ar[2]
+
+- dp[i] = max{1, 1+dp[i-1]}
+
+  <img align='left' src="img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210504120115773.png" alt="image-20210504120115773" style="zoom:30%;" />
+
+```cpp
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& ar) 
+    {
+        /*
+          dp[i]: 以第i个元素结尾的递增子序列的长度
+          dp[0] = 1;
+          dp[1] = max{1, 1+dp[0]} ar[0] < ar[1]
+          dp[2] = max{1, 1+dp[1]} ar[1] < ar[2]
+          ...
+          dp[i] = max{1, 1+dp[i-1]}
+        */
+
+        int maxlen = 0;
+        vector<int> dp(ar.size(), 1); //dp初始化大小并赋值为1
+
+        for(int i = 0; i < ar.size(); ++i)
+        {
+            //j遍历从0到i
+            for(int j = 0; j < i; ++j)
+            {
+                if(ar[j] < ar[i] && 1+dp[j] > dp[i])
+                {
+                    dp[i] = 1 + dp[j];
+                }
+            }
+        
+            maxlen = maxlen > dp[i] ? maxlen : dp[i];
+        }
+        return maxlen;
+    }
+};
+```
+
+**扩充：**怎么输出最长子序列具体内容？加一个数组用来保存当前元素的前一个元素的下标，输出的时候从尾部跳着往前找
+
+```cpp
+vector<int> LIS(vector<int>& arr)
+{
+    int size = arr.size();
+    vector<int> dp(size, 1);
+    vector<int> path(size, -1);  //记录路径（前一个元素的下标）
+    int endindex = 0;
+    int maxlen = 0;
+
+    for (int i = 0; i < size; ++i)
+    {
+        for (int j = 0; j < i; ++j)
+        {
+            if (arr[j] < arr[i] && 1 + dp[j] > dp[i])
+            {
+                dp[i] = 1 + dp[j];
+                path[i] = j;  //保存前一个元素的下标
+            }
+        }
+        maxlen = maxlen > dp[i] ? maxlen : dp[i];
+        if (maxlen == dp[i])  endindex = i;
+    }
+
+    vector<int> rt;
+    int i;
+    for (i = endindex; path[i] != -1; i = path[i])//跳着往前找
+    {
+        rt.push_back(arr[i]);
+    }
+    rt.push_back(arr[i]);
+    reverse(rt.begin(), rt.end());
+    return rt;
+}
+```
 
 # 最长公共子序列LCS √
 
@@ -556,8 +634,6 @@ public:
     }
 };
 ```
-
-
 
 
 
