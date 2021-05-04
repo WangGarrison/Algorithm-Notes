@@ -635,6 +635,89 @@ public:
 };
 ```
 
+# 最小路径和 √
+
+给定一个包含非负整数的 `m x n` 网格 `grid` ，请找出一条从左上角到右下角的路径，使得路径上的数字总和为最小。
+
+**说明：**每次只能向下或者向右移动一步。
+
+**示例 1：**
+
+![image-20210504222124526](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210504222124526.png)
+
+```
+输入：grid = [[1,3,1],[1,5,1],[4,2,1]]
+输出：7
+解释：因为路径 1→3→1→1→1 的总和最小。
+```
+
+**我的思路：**
+
+- 第一行和第一列的元素的路径是固定的
+- `当i>0, j>0, dp[i][j] = min(dp[i-1][j], dp[i][j-1]) + grid[i][j]`
+- <img align='left' src="img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210504222312712.png" alt="image-20210504222312712" style="zoom:43%;" />
+- `最后得到 dp[m-1][n-1]的值即为从网格左上角到网格右下角的最小路径和。`
+
+```cpp
+class Solution {
+public:
+    int minPathSum(vector<vector<int>>& grid) 
+    {
+        //第一行和第一列的元素的路径是固定的
+        //当i>0, j>0, dp[i][j] = min(dp[i-1][j], dp[i][j-1]) + grid[i][j]
+        if(grid.empty())    return 0;
+        vector<vector<int>> dp(grid.size(), vector<int>(grid[0].size()));//初始化dp二维数组为0
+
+        for(int i = 0; i < grid.size(); ++i)
+        {
+            for(int j = 0; j < grid[i].size(); ++j)
+            {
+                if(i == 0 && j == 0)  dp[i][j] = grid[i][j];
+                else if(i == 0 && j != 0)   dp[i][j] = dp[i][j-1] + grid[i][j];
+                else if(i != 0 && j == 0)   dp[i][j] = dp[i-1][j] + grid[i][j];
+                else    dp[i][j] = min(dp[i-1][j], dp[i][j-1]) + grid[i][j];
+            }
+        }
+        return dp[grid.size()-1][grid[0].size()-1];
+    }
+};
+```
+
+# 求路径 √
+
+一个机器人在m×n大小的地图的左上角（起点）。
+
+机器人每次向下或向右移动。机器人要到达地图的右下角（终点）。
+
+可以有多少种不同的路径从起点走到终点？
+
+<img align='left' src="img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/873CB1F2327F70DA0CA0FDC797F894A7" alt="img" style="zoom: 37%;" />
+
+**我的思路：**
+
+- 第一行和第一列的元素的路径是固定的
+- `当i>0, j>0, dp[i][j] = dp[i-1][j] + dp[i][j-1]`![image-20210504232904052](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210504232904052.png)
+
+```cpp
+class Solution {
+public:
+    int uniquePaths(int m, int n) //m行n列
+    {
+        vector<vector<int>> dp(m, vector<int>(n));
+        
+        for(int i = 0; i < m; ++i)
+        {
+            for(int j = 0; j < n; ++j)
+            {
+                if(i == 0 || j == 0)    dp[i][j] = 1;
+                else    dp[i][j] = dp[i-1][j] + dp[i][j-1];
+            }
+        }
+        return dp[m-1][n-1];
+    }
+};
+```
+
 
 
 # T70
