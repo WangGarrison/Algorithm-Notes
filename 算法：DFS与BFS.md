@@ -133,3 +133,72 @@ public:
 };
 ```
 
+# 二叉树中和为某一值的路径
+
+```cpp
+输入一棵二叉树和一个整数，打印出二叉树中节点值的和为输入整数的所有路径。从树的根节点开始往下一直到叶节点所经过的节点形成一条路径。
+给定如下二叉树，以及目标和 target = 22，
+
+              5
+             / \
+            4   8
+           /   / \
+          11  13  4
+         /  \    / \
+        7    2  5   1
+返回:
+[
+   [5,4,11,2],
+   [5,8,4,5]
+]
+
+```
+
+**我的思路：**
+
+- 深度优先遍历二叉树，每次遍历的时候记录之前的结点，遍历到叶子结点的时候看之前的和是否为target
+- 是的话将该路径保存，不是的话该路径删除一个元素，回溯
+
+```cpp
+class Solution {
+private:
+    vector<int> onepath; 		 //一条路径
+    vector<vector<int>> sumpath; //所有路径
+
+public:
+    vector<vector<int>>& pathSum(TreeNode* root, int target)
+    {
+        depth(root, target);
+        return sumpath;
+    }
+
+    //深度优先遍历二叉树，每次遍历的时候记录之前的结点，遍历到叶子的时候看之前的和是否为target
+    //是的话将该路径保存，不是的话该路径删除一个元素，回溯
+    void depth(TreeNode* root, int target)
+    {      
+        if(root == nullptr) return;
+        
+        onepath.push_back(root->val);
+
+        //遍历到底的时候看之前的和是否为target
+        if (root->left == nullptr && root->right == nullptr) 
+        {
+            int sum = 0;
+            for (auto & it : onepath)
+            {
+                sum += it;
+            }
+
+            if (target == sum)  sumpath.push_back(onepath);
+        }
+        
+        pathSum(root->left, target);
+        pathSum(root->right, target);
+
+        onepath.pop_back();
+    }
+};
+```
+
+
+
