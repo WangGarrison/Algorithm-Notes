@@ -200,5 +200,55 @@ public:
 };
 ```
 
+# 括号生成
 
+给出n对括号，请编写一个函数来生成所有的由n对括号组成的合法组合。
+
+例如，给出n=3，解集为：
+
+"((()))", "(()())", "(())()", "()()()", "()(())"
+
+**我的思路：**
+
+- 深度优先遍历
+- 当前左右括号都有大于 0 个可以使用的时候，才产生分支
+- 产生左分支的时候，只看当前是否还有左括号可以使用
+- 产生右分支的时候，还受到左分支的限制，右边剩余可以使用的括号数量一定得在严格大于左边剩余的数量的时候，才可以产生分支
+- 在左边和右边剩余的括号数都等于 0 的时候结算
+
+<img align='left' src="img/%E7%AE%97%E6%B3%95%EF%BC%9ADFS%E4%B8%8EBFS.img/image-20210516004655268.png" alt="image-20210516004655268" style="zoom:50%;" />
+
+```cpp
+class Solution {
+private:
+    vector<string> rt;
+public:
+    vector<string> generateParenthesis(int n) 
+    {
+        if(n == 0)  return vector<string>();
+        dfs("", n, n);
+        return rt;
+    }
+
+    void dfs(string str, int left, int right)  //left和right表示剩余的左右括号数量
+    {
+        if(left > right || left < 0 || right < 0)    return;
+
+        if(left == 0 && right == 0)
+        {
+            rt.push_back(str);
+        }
+
+        if(left > 0)
+        {
+            dfs(str + "(", left-1, right);
+        }
+        
+        if(left < right)
+        {
+            dfs(str + ")", left, right-1);
+        }
+    }
+};
+```
 
