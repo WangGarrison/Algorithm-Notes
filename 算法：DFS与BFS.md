@@ -252,3 +252,146 @@ public:
 };
 ```
 
+# 矩阵中的路径
+
+给定一个 m x n 二维字符网格 board 和一个字符串单词 word 。如果 word 存在于网格中，返回 true ；否则，返回 false 。
+
+单词必须按照字母顺序，通过相邻的单元格内的字母构成，其中“相邻”单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母不允许被重复使用。
+
+ 例如，在下面的 3×4 的矩阵中包含单词 "ABCCED"（单词中的字母已标出）。
+
+<img align='left' src="img/%E7%AE%97%E6%B3%95%EF%BC%9ADFS%E4%B8%8EBFS.img/image-20210618232041378.png" alt="image-20210618232041378" style="zoom:40%;" />
+
+```shell
+输入：board = [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], word = "ABCCED"
+输出：true
+```
+
+**我的思路：**
+
+- 遍历矩阵，对每一个字母进行深度优先遍历去找给定的单词
+- 每一次深度优先遍历里，已经访问并记录下的字母赋值为'\0'，防止回溯的时候重复记录
+
+```cpp
+class Solution {
+private:
+    bool flag = false;  //false没找到，true找到了
+public:
+    bool exist(vector<vector<char>>& board, string word) 
+    {
+        if(word.empty())    return true;
+        if(board.empty())   return false;
+
+        //深度优先遍历，对每一个字母进行dfs遍历，看能不能找到该单词
+        for(int i = 0; i < board.size(); ++i)
+        {
+            for(int j = 0; j < board[0].size(); ++j)
+            {
+                dfs(board, i, j, word, 0);
+                if(flag)    return flag;
+            }
+        }
+        return false;
+    }
+
+    void dfs(vector<vector<char>> & board, int i, int j, string & word, int index)
+    {
+        if(index == word.size()-1 && board[i][j] == word[index] || index >= word.size())     
+        {
+            flag = true;
+            return;
+        }
+        
+        if(board[i][j] == word[index])   
+        {
+            board[i][j] = '\0';  //访问过该位置，就置为\0
+
+            //右
+            if(!flag && j+1 < board[0].size() && board[i][j+1] != '\0')  dfs(board,i, j+1, word, index+1);
+
+            //下
+            if(!flag && i+1 < board.size() && board[i+1][j] != '\0') dfs(board, i+1, j, word, index+1);
+
+            //左
+            if(!flag && j-1 >= 0 && board[i][j-1] != '\0')   dfs(board, i, j-1, word, index+1);
+
+            //上
+            if(!flag && i-1 >= 0 && board[i-1][j] != '\0')   dfs(board, i-1, j, word, index+1);
+
+            board[i][j] = word[index];  //之前赋值成了\0，回溯的时候还原
+        }
+        //else if(board[i][j] != word[index]) return; 
+    }
+};
+```
+
+# 机器人的运动范围
+
+地上有一个m行n列的方格，从坐标 [0,0] 到坐标 [m-1,n-1] 。一个机器人从坐标 [0, 0] 的格子开始移动，它每次可以向左、右、上、下移动一格（不能移动到方格外），也不能进入行坐标和列坐标的数位之和大于k的格子。例如，当k为18时，机器人能够进入方格 [35, 37] ，因为3+5+3+7=18。但它不能进入方格 [35, 38]，因为3+5+3+8=19。请问该机器人能够到达多少个格子？
+
+```cpp
+输入：m = 2, n = 3, k = 1
+输出：3
+    
+输入：m = 3, n = 1, k = 0
+输出：1
+```
+
+**我的思路：**
+
+- 深度优先遍历，访问过一个位置就标记一下并计数，依此对四个方向进行访问
+
+```cpp
+class Solution {
+private:
+    int count = 0;
+public:
+    int movingCount(int m, int n, int k) 
+    {
+        vector<vector<bool>> vvec(m, vector<bool>(n));  //初始化是false
+        dfs(0, 0, m, n, k, vvec);
+        return count;
+    }
+
+    void dfs(int i, int j, int m, int n, int k, vector<vector<bool>> & vvec)
+    {
+        if(i >= m || j >= n)    return;
+
+        if(funAdd(i,j) <= k && !vvec[i][j])
+        {
+            count++;
+            vvec[i][j] = true;
+
+            //右
+            if(j+1 < n)     dfs(i, j+1, m, n, k, vvec);
+
+            //下
+            if(i+1 < m)     dfs(i+1, j, m, n, k, vvec);
+
+            //左
+            if(j-1 >= 0)    dfs(i, j-1, m, n, k, vvec);
+
+            //上
+            if(i-1 >= 0)    dfs(i-1, j, m, n, k, vvec);
+        }
+    }
+
+    //求两个数字的数位之和
+    int funAdd(int a, int b)
+    {
+        int sum1 = 0, sum2 = 0;
+        while(a != 0)
+        {
+            sum1 += a % 10;
+            a /= 10;
+        }
+        while(b != 0)
+        {
+            sum2 += b % 10;
+            b /= 10;
+        }
+        return sum1 + sum2;
+    }
+};
+```
+
