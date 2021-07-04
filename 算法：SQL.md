@@ -279,3 +279,166 @@ on a.Id=b.CustomerId
 where b.CustomerID is null
 ```
 
+# 部门工资最高的员工
+
+Employee 表包含所有员工信息，每个员工有其对应的 Id, salary 和 department Id。
+
+```
++----+-------+--------+--------------+
+| Id | Name  | Salary | DepartmentId |
++----+-------+--------+--------------+
+| 1  | Joe   | 70000  | 1            |
+| 2  | Jim   | 90000  | 1            |
+| 3  | Henry | 80000  | 2            |
+| 4  | Sam   | 60000  | 2            |
+| 5  | Max   | 90000  | 1            |
++----+-------+--------+--------------+
+```
+
+Department 表包含公司所有部门的信息。
+
+```
++----+----------+
+| Id | Name     |
++----+----------+
+| 1  | IT       |
+| 2  | Sales    |
++----+----------+
+```
+
+编写一个 SQL 查询，找出每个部门工资最高的员工。对于上述表，您的 SQL 查询应返回以下行（行的顺序无关紧要）。
+
+```
++------------+----------+--------+
+| Department | Employee | Salary |
++------------+----------+--------+
+| IT         | Max      | 90000  |
+| IT         | Jim      | 90000  |
+| Sales      | Henry    | 80000  |
++------------+----------+--------+
+```
+
+**我的思路：**
+
+- 先对两张表通过部门作内连接
+- 再从大表里面筛选出部门工资最高的，筛选最高工资可以用max(Salary)
+
+```mysql
+# 先对两张表通过部门作内连接
+select b.Name as Department,a.Name as Employee,a.Salary as Salary
+from Employee a 
+inner join Department b
+on a.DepartmentId=b.Id  
+# 再从大表里面筛选出工资最高的
+where (a.DepartmentId,a.Salary) in (
+    select DepartmentId,max(Salary)   #注意：聚集函数max只能用于select与having中，不能用于where中
+    from Employee
+    group by DepartmentId
+)
+```
+
+# 部门工资前3高的所有员工
+
+Employee 表包含所有员工信息，每个员工有其对应的工号 Id，姓名 Name，工资 Salary 和部门编号 DepartmentId 。
+
+```
++----+-------+--------+--------------+
+| Id | Name  | Salary | DepartmentId |
++----+-------+--------+--------------+
+| 1  | Joe   | 85000  | 1            |
+| 2  | Henry | 80000  | 2            |
+| 3  | Sam   | 60000  | 2            |
+| 4  | Max   | 90000  | 1            |
+| 5  | Janet | 69000  | 1            |
+| 6  | Randy | 85000  | 1            |
+| 7  | Will  | 70000  | 1            |
++----+-------+--------+--------------+
+```
+
+Department 表包含公司所有部门的信息。
+
+```
++----+----------+
+| Id | Name     |
++----+----------+
+| 1  | IT       |
+| 2  | Sales    |
++----+----------+
+```
+
+编写一个 SQL 查询，找出每个部门获得前三高工资的所有员工。例如，根据上述给定的表，查询结果应返回：
+
+```
++------------+----------+--------+
+| Department | Employee | Salary |
++------------+----------+--------+
+| IT         | Max      | 90000  |
+| IT         | Randy    | 85000  |
+| IT         | Joe      | 85000  |
+| IT         | Will     | 70000  |
+| Sales      | Henry    | 80000  |
+| Sales      | Sam      | 60000  |
++------------+----------+--------+
+```
+
+**我的思路：**
+
+- 两张表先做内连接
+- 再在大表里筛选出工资前3大的：前3大的，则工资比他大的小于3个
+
+```mysql
+# 两张表先做内连接
+select b.Name as Department, a.Name as Employee, a.Salary as Salary
+from Employee a 
+inner join Department b
+on a.DepartmentId=b.Id 
+
+# 再在大表里筛选出工资前3大的：前3大的，则工资比他大的小于3个
+where (
+    select count(distinct c.Salary) 
+    from Employee c
+    where c.Salary > a.Salary and a.DepartmentId=c.DepartmentId
+)  < 3;
+```
+
+# 删除重复的电子邮箱
+
+编写一个 SQL 查询，来删除 Person 表中所有重复的电子邮箱，重复的邮箱里只保留 Id 最小 的那个。
+
+```
++----+------------------+
+| Id | Email            |
++----+------------------+
+| 1  | john@example.com |
+| 2  | bob@example.com  |
+| 3  | john@example.com |
++----+------------------+
+```
+
+Id 是这个表的主键。
+例如，在运行你的查询语句之后，上面的 Person 表应返回以下几行:
+
+```
++----+------------------+
+| Id | Email            |
++----+------------------+
+| 1  | john@example.com |
+| 2  | bob@example.com  |
++----+------------------+
+```
+
+**我的思路：**
+
+- 自身作连接，然后删除p1.Email=p2.Email and p1.Id > p2.Id的
+
+```mysql
+delete p1 from Person p1
+inner join Person p2
+on p1.Email=p2.Email 
+and p1.Id>p2.Id
+
+#或者使用笛卡尔积
+delete p1 from Person p1, Person p2
+where p1.Email=p2.Email and p1.Id>p2.Id
+```
+
