@@ -442,3 +442,202 @@ delete p1 from Person p1, Person p2
 where p1.Email=p2.Email and p1.Id>p2.Id
 ```
 
+# 上升的温度
+
+表 Weather
+
+```
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| id            | int     |
+| recordDate    | date    |
+| temperature   | int     |
++---------------+---------+
+```
+
+id 是这个表的主键
+该表包含特定日期的温度信息
+
+
+编写一个 SQL 查询，来查找与之前（昨天的）日期相比温度更高的所有日期的 id 。
+
+返回结果 不要求顺序 。
+
+查询结果格式如下例：
+
+```
+Weather
++----+------------+-------------+
+| id | recordDate | Temperature |
++----+------------+-------------+
+| 1  | 2015-01-01 | 10          |
+| 2  | 2015-01-02 | 25          |
+| 3  | 2015-01-03 | 20          |
+| 4  | 2015-01-04 | 30          |
++----+------------+-------------+
+
+Result table:
++----+
+| id |
++----+
+| 2  |
+| 4  |
++----+
+2015-01-02 的温度比前一天高（10 -> 25）
+2015-01-04 的温度比前一天高（20 -> 30）
+```
+
+**我的思路：**
+
+- 自身作连接，选出日期相差1并且温度比前一天大的
+- 注意：日期差值使用datediff函数
+
+```mysql
+select a.id from Weather a
+inner join Weather b
+on datediff(a.recordDate,b.recordDate)=1 
+and a.Temperature>b.Temperature 
+```
+
+# 行程和用户
+
+```mysql
+表：Trips
++-------------+----------+
+| Column Name | Type     |
++-------------+----------+
+| Id          | int      |
+| Client_Id   | int      |
+| Driver_Id   | int      |
+| City_Id     | int      |
+| Status      | enum     |
+| Request_at  | date     |     
++-------------+----------+
+Id 是这张表的主键。
+这张表中存所有出租车的行程信息。每段行程有唯一 Id ，其中 Client_Id 和 Driver_Id 是 Users 表中 Users_Id 的外键。
+Status 是一个表示行程状态的枚举类型，枚举成员为(‘completed’, ‘cancelled_by_driver’, ‘cancelled_by_client’) 。
+ 
+
+表：Users
+
++-------------+----------+
+| Column Name | Type     |
++-------------+----------+
+| Users_Id    | int      |
+| Banned      | enum     |
+| Role        | enum     |
++-------------+----------+
+Users_Id 是这张表的主键。
+这张表中存所有用户，每个用户都有一个唯一的 Users_Id ，Role 是一个表示用户身份的枚举类型，枚举成员为 (‘client’, ‘driver’, ‘partner’) 。
+Banned 是一个表示用户是否被禁止的枚举类型，枚举成员为 (‘Yes’, ‘No’) 。
+ 
+
+写一段 SQL 语句查出 "2013-10-01" 至 "2013-10-03" 期间非禁止用户（乘客和司机都必须未被禁止）的取消率。非禁止用户即 Banned 为 No 的用户，禁止用户即 Banned 为 Yes 的用户。
+
+取消率 的计算方式如下：(被司机或乘客取消的非禁止用户生成的订单数量) / (非禁止用户生成的订单总数)。
+
+返回结果表中的数据可以按任意顺序组织。其中取消率 Cancellation Rate 需要四舍五入保留 两位小数 。
+
+查询结果格式如下例所示：
+
+Trips 表：
++----+-----------+-----------+---------+---------------------+------------+
+| Id | Client_Id | Driver_Id | City_Id | Status              | Request_at |
++----+-----------+-----------+---------+---------------------+------------+
+| 1  | 1         | 10        | 1       | completed           | 2013-10-01 |
+| 2  | 2         | 11        | 1       | cancelled_by_driver | 2013-10-01 |
+| 3  | 3         | 12        | 6       | completed           | 2013-10-01 |
+| 4  | 4         | 13        | 6       | cancelled_by_client | 2013-10-01 |
+| 5  | 1         | 10        | 1       | completed           | 2013-10-02 |
+| 6  | 2         | 11        | 6       | completed           | 2013-10-02 |
+| 7  | 3         | 12        | 6       | completed           | 2013-10-02 |
+| 8  | 2         | 12        | 12      | completed           | 2013-10-03 |
+| 9  | 3         | 10        | 12      | completed           | 2013-10-03 |
+| 10 | 4         | 13        | 12      | cancelled_by_driver | 2013-10-03 |
++----+-----------+-----------+---------+---------------------+------------+
+
+Users 表：
++----------+--------+--------+
+| Users_Id | Banned | Role   |
++----------+--------+--------+
+| 1        | No     | client |
+| 2        | Yes    | client |
+| 3        | No     | client |
+| 4        | No     | client |
+| 10       | No     | driver |
+| 11       | No     | driver |
+| 12       | No     | driver |
+| 13       | No     | driver |
++----------+--------+--------+
+
+Result 表：
++------------+-------------------+
+| Day        | Cancellation Rate |
++------------+-------------------+
+| 2013-10-01 | 0.33              |
+| 2013-10-02 | 0.00              |
+| 2013-10-03 | 0.50              |
++------------+-------------------+
+```
+
+**我的思路：**
+
+- Day直接select，比率通过sum函数与count函数相除来计算
+- 然后添加限制条件：乘客未被禁止、司机未被禁止、日期在10.1-10.3
+
+```mysql
+# Day直接select，比率通过sum函数与count函数相除来计算
+# 然后添加限制条件：乘客未被禁止、司机未被禁止、日期在10.1-10.3
+select Request_at as Day,
+round(sum(if(Status='completed',0,1))/count(Status),2) as 'Cancellation Rate'
+from trips
+where Client_Id in(select Users_Id from Users where Banned='No')
+and Driver_Id in(select Users_Id from Users where Banned='No')
+and Request_at between '2013-10-01' and '2013-10-03'
+group by request_at
+```
+
+# 超过5名学生的课
+
+```mysql
+有一个courses 表 ，有: student (学生) 和 class (课程)。
+
+请列出所有超过或等于5名学生的课。
+
+例如，表：
+
++---------+------------+
+| student | class      |
++---------+------------+
+| A       | Math       |
+| B       | English    |
+| C       | Math       |
+| D       | Biology    |
+| E       | Math       |
+| F       | Computer   |
+| G       | Math       |
+| H       | Math       |
+| I       | Math       |
++---------+------------+
+应该输出:
+
++---------+
+| class   |
++---------+
+| Math    |
++---------+
+ 
+提示：学生在每个课中不应被重复计算。
+```
+
+**我的思路：**
+
+- group by + having，注意统计的时候使用distinct去重复学生
+
+```mysql
+select class from courses 
+group by class
+having count(distinct student)>=5
+```
+
