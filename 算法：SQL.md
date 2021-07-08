@@ -674,3 +674,70 @@ having count(distinct student)>=5
 update salary set sex=if(sex='m','f','m')
 ```
 
+# 不使用order获取薪水第二多的
+
+有一个员工表employees简况如下:
+
+<img align='left' src="img/%E7%AE%97%E6%B3%95%EF%BC%9ASQL.img/D90875118E960F00405A3E8200D323BB" alt="img" style="zoom:50%;" />
+
+有一个薪水表salaries简况如下:
+
+<img align='left' src="img/%E7%AE%97%E6%B3%95%EF%BC%9ASQL.img/B11CDB910B447AF15705E5DE4A57B496" alt="img" style="zoom:50%;" />
+
+请你查找薪水排名第二多的员工编号emp_no、薪水salary、last_name以及first_name，**不能使用order by完成**
+
+**我的思路：**
+
+- 注意，不能使用order by语句
+- 找所有里面第二大的：剔除掉第一多的，剩余集合里面第一大的
+
+```mysql
+# 找所有里面第二大的，剔除掉第一多的，在剩余集合里面找第一大的
+
+select a.emp_no as emp_no, b.salary as salary, 
+a.last_name as last_name, a.first_name as first_name
+from employees a
+inner join salaries b
+on a.emp_no = b.emp_no
+
+where b.salary in (
+    select max(salary) 
+    from salaries 
+    where salary not in (
+        select max(salary) from salaries  #先找第一大的，然后再剩余的里面找大的
+    )
+)
+```
+
+# 左连接查询
+
+有一个员工表employees简况如下:
+
+<img align='left' src="img/%E7%AE%97%E6%B3%95%EF%BC%9ASQL.img/6D9FFF5B1FDE1BF0E1E9D1396D67CA49" alt="img" style="zoom:50%;" />
+
+有一个部门表departments表简况如下:
+
+<img align='left' src="img/%E7%AE%97%E6%B3%95%EF%BC%9ASQL.img/C24CBBDE019ABEEEB1835C750CAAC219" alt="img" style="zoom:50%;" />
+
+有一个，部门员工关系表dept_emp简况如下:
+
+<img align='left' src="img/%E7%AE%97%E6%B3%95%EF%BC%9ASQL.img/3F560B6ECCA07CE59A293F9B6391D9A5" alt="img" style="zoom:50%;" />
+
+请你查找所有员工的last_name和first_name以及对应的dept_name，也==包括暂时没有分配部门的员工==，以上例子输出如下:
+
+<img align='left' src="img/%E7%AE%97%E6%B3%95%EF%BC%9ASQL.img/F02CEDCA7F2DA40C99E3BB9B269AF5CA" alt="img" style="zoom:50%;" />
+
+**我的思路：**
+
+- 因为员工部门名字是NULL也得显示出来，所以连接要使用左连接
+
+```mysql
+select a.last_name as last_name ,
+a.first_name as first_name ,c.dept_name as dept_name
+from employees a
+left join dept_emp b   #注意：员工部门名字是NULL也得显示出来，所以连接要使用左连接
+on a.emp_no = b.emp_no
+left join departments c  
+on b.dept_no =c.dept_no
+```
+
