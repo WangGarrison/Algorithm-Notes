@@ -58,7 +58,7 @@
 
 ![image-20210502113938337](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210502113938337.png)
 
-# 斐波那契数列 √
+# 斐波那契数列 
 
 0  1  1  2  3
 
@@ -115,7 +115,54 @@ int Fibonacci(int n)
 
 
 
-# 最大子序和问题
+# 青蛙跳台阶
+
+```cpp
+一只青蛙一次可以跳上1级台阶，也可以跳上2级台阶。求该青蛙跳上一个 n 级的台阶总共有多少种跳法。
+答案需要取模 1e9+7（1000000007），如计算初始结果为：1000000008，请返回 1。
+
+输入：n = 2
+输出：2
+
+输入：n = 7
+输出：21
+示例 3：
+
+输入：n = 0
+输出：1
+```
+
+**我的思路：**
+
+- f(n) = f(n-1) + f(n-2)，注意本题0级台阶有1种跳法
+
+```cpp
+class Solution {
+public:
+    int numWays(int n) 
+    {
+        //跳上n级台阶的种数 = 跳上n-1级台阶的种数 + 跳上n-2级台阶的种数
+        if(n <= 1)  return 1;
+       
+        //f(n) = f(n-1) + f(n-2)
+        
+        int i = 1; //0级台阶1种跳法
+        int j = 1; //1级台阶1种跳法
+        int k = i + j; //2级台阶2种跳法
+        for(int index = 2; index<= n; ++index)
+        {
+            k = (i + j) % 1000000007;
+            i = j;
+            j = k;
+        }
+        return k;
+    }
+};
+```
+
+
+
+# 最大子序和/连续子数组的最大和
 
 给定一个整数数组 `nums` ，找到一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
 
@@ -132,27 +179,23 @@ int Fibonacci(int n)
   ![image-20210502121606941](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210502121606941.png)
 
 ```cpp
-int maxSubArray(vector<int>& nums) 
-{
-    if(nums.empty())    return 0;
-
-    int preSum = 0;
-    int maxSum = nums[0];
-
-    for(int i = 0; i < nums.size(); ++i)
-    {
-        if(preSum <= 0)
-        { 
-            preSum = nums[i];  //丢弃之前的和，重新计算和
+class Solution {
+public:
+    int maxSubArray(vector<int>& nums) {
+        // 遍历数组，计算当前元素之前和，若之前和<0则丢弃之前的和，从当前位置重新算和；每次更新最大和  
+        int preSum = 0;
+        int maxSum = INT_MIN;
+        for(int i = 0; i < nums.size(); ++i) {
+            if(preSum < 0) {
+                maxSum = max(preSum, maxSum);
+                preSum = 0;
+            }
+            preSum += nums[i]; 
+            maxSum = max(preSum, maxSum);
         }
-        else
-        {
-            preSum += nums[i];
-        } 
-        maxSum = max(preSum, maxSum);
+        return maxSum;
     }
-    return maxSum;
-}
+};
 ```
 
 **注意：施的题目和上面的不完全一样**
@@ -161,7 +204,7 @@ int maxSubArray(vector<int>& nums)
 
 ![image-20210502123213652](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210502123213652.png)
 
-# 最长递增子序列长度LIS√
+# 最长递增子序列长度LIS
 
 ```shell
 输入：5 3 4 1 8 7 9
@@ -253,7 +296,7 @@ vector<int> LIS(vector<int>& arr)
 }
 ```
 
-# 最长公共子序列LCS √
+# 最长公共子序列LCS 
 
 LCS：longest common subsequence（注意，子序列可以不连续，子串要求连续）
 
@@ -331,7 +374,7 @@ public:
 
 "aca"），因此这时还需判断找到的字符串是否来自同一个字符串）
 
-# 输出最长公共子序列 √
+# 输出最长公共子序列 
 
 上述最长公共子序列题目只输出了LCS的长度，那LCS具体的内容是什么呢？
 
@@ -439,7 +482,7 @@ int main()
 
 ![image-20210503190914498](img/%E7%AE%97%E6%B3%95%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92DP.img/image-20210503190914498.png)
 
-# 最长回文子序列 √
+# 最长回文子序列 
 
 ```shell
 给定一个字符串 s ，找到其中最长的回文子序列，并返回该序列的长度。可以假设 s 的最大长度为 1000 。
@@ -505,7 +548,7 @@ public:
 };
 ```
 
-# 最长公共子串 √
+# 最长公共子串 
 
 ```shell
 给定两个字符串str1和str2,输出两个字符串的最长公共子串
@@ -558,7 +601,7 @@ string LCS(string str1, string str2)
 }
 ```
 
-# 最长回文子串 √
+# 最长回文子串 
 
 ```shell
 给你一个字符串 s，找到 s 中最长的回文子串。
@@ -634,7 +677,7 @@ public:
 };
 ```
 
-# 最小路径和 √
+# 最小路径和 
 
 给定一个包含非负整数的 `m x n` 网格 `grid` ，请找出一条从左上角到右下角的路径，使得路径上的数字总和为最小。
 
@@ -682,7 +725,7 @@ public:
 };
 ```
 
-# 求路径 √
+# 求路径 
 
 一个机器人在m×n大小的地图的左上角（起点）。
 
@@ -717,7 +760,7 @@ public:
 };
 ```
 
-# 数字翻译成字符串√
+# 数字翻译成字符串
 
 ```cpp
 给定一个数字，我们按照如下规则把它翻译为字符串：0 翻译成 “a” ，1 翻译成 “b”，……，11 翻译成 “l”，……，25 翻译成 “z”。一个数字可能有多个翻译。请编程实现一个函数，用来计算一个数字有多少种不同的翻译方法。
@@ -738,34 +781,87 @@ public:
 ```cpp
 class Solution {
 public:
-    int translateNum(int num) 
-    {
+    int translateNum(int num) {
+        // 如果当前字符加后面的字符在[10,25]之间，则有两种翻译
+        // 翻译总方法数 = 当前字符翻译为一个的后序方法数 + 当前字符与后一个字符联合翻译的后序方法数
+        
+        // 先把数字转换成字符串
         string str = to_string(num);
 
-        //12258 = b2258 + m258
-        vector<int> dp(str.size()+1, 0);
-        return fun(str, 0, dp);
+        vector<int> dp(str.size()+1);    // 使用dp数组记忆化存储
+
+        // 计算从0开始到str结束总共可以翻译的方法数
+        return fun(str,0, dp);
     }
 
-    int fun(string & str, int index, vector<int> & dp)
-    {
-        if(index >= str.size()-1)   return 1;  //注意是>=，若是==数组越界
-        if(dp[index] != 0)  return dp[index];
+    // 计算从start开始到str结束总共可以翻译的方法数
+    int fun(string & str, int start, vector<int> & dp) {
+        if(start + 1 >= str.size()) return 1;  // 到最后一个字符了
 
-        string tmp;
-        tmp.push_back(str[index]);
-        tmp.push_back(str[index+1]);
-        int t = atoi(tmp.c_str());
+        if(dp[start] > 0)   return dp[start];
+		
+        // 当前字符+后一个字符组合的数字在[10,25]之间（注意：06不能算两种）
+        if(((str[start]-'0')*10 + str[start+1]-'0') <= 25 && str[start] != '0') 
+        {
+            dp[start] = fun(str, start + 1, dp) + fun(str, start + 2, dp);
+        } 
+        else
+        {
+            dp[start] = fun(str, start + 1, dp);         
+        }
 
-        if(t <= 25 && tmp[0] != '0')     //注意06不能算2种
-        {
-            dp[index] = fun(str, index+1, dp) + fun(str, index + 2, dp);  
+        return dp[start];
+    }
+};
+```
+
+# 礼物的最大价值
+
+```cpp
+在一个 m*n 的棋盘的每一格都放有一个礼物，每个礼物都有一定的价值（价值大于 0）。你可以从棋盘的左上角开始拿格子里的礼物，并每次向右或者向下移动一格、直到到达棋盘的右下角。给定一个棋盘及其上面的礼物的价值，请计算你最多能拿到多少价值的礼物？
+
+输入: 
+[
+  [1,3,1],
+  [1,5,1],
+  [4,2,1]
+]
+输出: 12
+解释: 路径 1→3→5→2→1 可以拿到最多价值的礼物
+```
+
+**我的思路：**
+
+- 做二维dp数组，如果是最左边和最上边那列，只可以来自一个方向，其他位置可以来自上边或者左边，选择大的
+
+- ```cpp
+  [1 3 1]   dp     [1 4 5]  
+  [1 5 1]   ->     [2    ]
+  [4 2 1]          [6    ]
+  ```
+
+```cpp
+class Solution {
+public:
+    int maxValue(vector<vector<int>>& grid) {        
+        // 做二维dp数组，如果是最左边和最上边那列，只可以来自一个方向，其他位置可以来自上边或者左边，选择大的
+        if(grid.empty())    return 0;
+        vector<vector<int>> dp(grid.size(), vector<int>(grid[0].size()));
+
+        for(int i = 0; i < grid.size(); ++i) {
+            for(int j = 0; j < grid[0].size(); ++j) {
+                if(i == 0 && j == 0) {
+                    dp[i][j] = grid[i][j];
+                } else if(i == 0) {
+                    dp[i][j] = dp[i][j-1] + grid[i][j];  // 只能从左边来
+                } else if(j == 0) {
+                    dp[i][j] = dp[i-1][j] + grid[i][j];  // 只能从上边来
+                } else {
+                    dp[i][j] = max(dp[i-1][j], dp[i][j-1]) + grid[i][j];  // 从两个方向的较大值来
+                }
+            }
         }
-        else    
-        {
-            dp[index] = fun(str, index+1, dp);
-        }
-        return dp[index];
+        return dp[grid.size()-1][grid[0].size()-1];
     }
 };
 ```

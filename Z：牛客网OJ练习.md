@@ -161,5 +161,26 @@ int main()
 }
 ```
 
+# int换成long类型，通过率提升
+
+```cpp
+/*
+输入有多组测试用例，每组空格隔开两个整数
+对于每组数据输出一行两个整数的和
+*/
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main()
+{
+    long a, b;
+    while(cin>>a>>b)
+    {
+        cout<<a+b<<endl;
+    }
+}
+```
+
 
 
