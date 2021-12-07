@@ -395,3 +395,91 @@ public:
 };
 ```
 
+# 边界着色
+
+```cpp
+给你一个大小为 m x n 的整数矩阵 grid ，表示一个网格。另给你三个整数 row、col 和 color 。网格中的每个值表示该位置处的网格块的颜色。
+
+当两个网格块的颜色相同，而且在四个方向中任意一个方向上相邻时，它们属于同一 连通分量 。
+
+连通分量的边界 是指连通分量中的所有与不在分量中的网格块相邻（四个方向上）的所有网格块，或者在网格的边界上（第一行/列或最后一行/列）的所有网格块。
+
+请你使用指定颜色 color 为所有包含网格块 grid[row][col] 的 连通分量的边界 进行着色，并返回最终的网格 grid 。
+
+输入：grid = [[1,1],[1,2]], row = 0, col = 0, color = 3
+输出：[[3,3],[3,2]]
+
+输入：grid = [[1,2,2],[2,3,2]], row = 0, col = 1, color = 3
+输出：[[1,3,3],[2,3,3]]
+
+输入：grid = [[1,1,1],[1,1,1],[1,1,1]], row = 1, col = 1, color = 2
+输出：[[2,2,2],[2,1,2],[2,2,2]]
+```
+
+**我的思路：**
+
+- 从(row, col)位置开始遍历矩阵，属于连通分量的、遍历到的位置都进行着色(使用一个矩阵标记位置是否走过)
+- 最后将位于联通分量但不是边界的恢复原色
+
+```cpp
+class Solution {
+private:
+    int iniCol = 0;
+public:
+    vector<vector<int>> colorBorder(vector<vector<int>>& grid, int row, int col, int color) {
+        if(grid.empty()) {
+            return grid;
+        }
+
+        // 从(row, col)位置开始遍历矩阵，属于连通分量的、遍历到的位置都进行着色
+        // 使用一个矩阵标记位置是否走过
+        vector<vector<int>> flag(grid.size(), vector<int>(grid[0].size()));  
+        iniCol = grid[row][col];  
+        dfs(grid, row, col, color, flag);
+
+        // 将位于联通分量但不是边界的恢复原色
+        for(int i = 0; i < grid.size(); ++i) {
+            for(int j = 0; j < grid[0].size(); ++j) {
+                if(flag[i][j] &&
+                   j+1 < grid[0].size() && flag[i][j+1] &&
+                   i+1 < grid.size() && flag[i+1][j] &&
+                   j-1 >= 0 && flag[i][j-1] &&
+                   i-1 >= 0 && flag[i-1][j]) {
+                       grid[i][j] = iniCol;
+                }
+            }
+        }
+
+        return grid;    
+    }
+
+    void dfs(vector<vector<int>> & grid, int row, int col, int color, vector<vector<int>> & flag) {
+        // 联通分量中的进行上色
+        grid[row][col] = color;
+        flag[row][col] = 1;
+
+        //右
+        if(col+1 < grid[0].size() && grid[row][col+1] == iniCol && !flag[row][col+1]) {
+            dfs(grid, row, col+1, color, flag);
+        }
+
+        //下
+        if(row+1 < grid.size() && grid[row+1][col] == iniCol && !flag[row+1][col]) {
+            dfs(grid, row+1, col, color, flag);
+        }
+
+        //左
+        if(col-1 >= 0 && grid[row][col-1] == iniCol && !flag[row][col-1]) {
+            dfs(grid, row, col-1, color, flag);
+        }
+
+        //上
+        if(row-1 >= 0 && grid[row-1][col] == iniCol && !flag[row-1][col]) {
+            dfs(grid, row-1, col, color, flag);
+        }
+    }
+};
+```
+
+
+
