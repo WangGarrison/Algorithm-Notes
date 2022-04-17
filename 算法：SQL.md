@@ -741,3 +741,7 @@ left join departments c
 on b.dept_no =c.dept_no
 ```
 
+
+
+
+
